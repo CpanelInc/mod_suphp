@@ -1,0 +1,116 @@
+From b02f017b3c22d19703a950ffacf69180acc750b9 Mon Sep 17 00:00:00 2001
+From: Kurt Newman <kurt.newman@cpanel.net>
+Date: Tue, 13 Jan 2015 18:18:05 -0600
+Subject: [PATCH 3/7] Option to turn off paranoid mode via configuration file
+
+Case 2666: Adds paranoid_uid_check and paranoid_gid_check
+options so that the user can turn off paranoid mode (which
+is on by default) when checking UID/GID of executed script.
+
+Normally, you cannot do this because the mode is set at
+compile time.
+
+For more information:
+ http://documentation.cpanel.net/display/EA/Apache+PHP+Request+Handling
+---
+ src/Application.cpp   |  4 ++--
+ src/Configuration.cpp | 14 ++++++++++++++
+ src/Configuration.hpp | 14 ++++++++++++++
+ 3 files changed, 30 insertions(+), 2 deletions(-)
+
+diff --git a/src/Application.cpp b/src/Application.cpp
+index 672d743..1b6e3e3 100644
+--- a/src/Application.cpp
++++ b/src/Application.cpp
+@@ -406,7 +406,7 @@ void suPHP::Application::checkProcessPermissions(
+     // Paranoid mode only
+ 
+ #ifdef OPT_USERGROUP_PARANOID
+-    if (targetUser != scriptFile.getUser()) {
++    if (config.getParanoidUIDCheck() && targetUser != scriptFile.getUser()) {
+         std::string error ="Mismatch between target UID ("
+             + Util::intToStr(targetUser.getUid()) + ") and UID ("
+             + Util::intToStr(scriptFile.getUser().getUid()) + ") of file \""
+@@ -415,7 +415,7 @@ void suPHP::Application::checkProcessPermissions(
+         throw SoftException(error, __FILE__, __LINE__);
+     }
+ 
+-    if (targetGroup != scriptFile.getGroup()) {
++    if (config.getParanoidGIDCheck() && targetGroup != scriptFile.getGroup()) {
+         std::string error ="Mismatch between target GID ("
+             + Util::intToStr(targetGroup.getGid()) + ") and GID ("
+             + Util::intToStr(scriptFile.getGroup().getGid()) + ") of file \""
+diff --git a/src/Configuration.cpp b/src/Configuration.cpp
+index 0c63ff5..f1ea3a6 100644
+--- a/src/Configuration.cpp
++++ b/src/Configuration.cpp
+@@ -114,6 +114,8 @@ suPHP::Configuration::Configuration() {
+     this->umask = 0077;
+     this->chroot_path = "";
+     this->full_php_process_display = false;
++    this->paranoid_uid_check = true;
++    this->paranoid_gid_check = true;
+ }
+ 
+ void suPHP::Configuration::readFromFile(File& file) 
+@@ -163,6 +165,10 @@ void suPHP::Configuration::readFromFile(File& file)
+                 this->chroot_path = value;
+ 	    else if (key == "full_php_process_display")
+ 		this->full_php_process_display = this->strToBool(value);
++	    else if (key == "paranoid_gid_check")
++		this->paranoid_gid_check = this->strToBool(value);
++	    else if (key == "paranoid_uid_check")
++		this->paranoid_uid_check = this->strToBool(value);
+             else 
+                 throw ParsingException("Unknown option \"" + key + 
+                                        "\" in section [global]", 
+@@ -231,6 +237,14 @@ bool suPHP::Configuration::getFullPHPProcessDisplay() const {
+     return this->full_php_process_display;
+ }
+ 
++bool suPHP::Configuration::getParanoidUIDCheck() const {
++    return this->paranoid_uid_check;
++}
++
++bool suPHP::Configuration::getParanoidGIDCheck() const {
++    return this->paranoid_gid_check;
++}
++
+ bool suPHP::Configuration::getErrorsToBrowser() const {
+     return this->errors_to_browser;
+ }
+diff --git a/src/Configuration.hpp b/src/Configuration.hpp
+index 1853acb..6f1aa12 100644
+--- a/src/Configuration.hpp
++++ b/src/Configuration.hpp
+@@ -60,6 +60,8 @@ namespace suPHP {
+         int umask;
+         std::string chroot_path;
+         bool full_php_process_display;
++        bool paranoid_uid_check;
++        bool paranoid_gid_check;
+ 
+         /**
+          * Converts string to bool
+@@ -146,6 +148,18 @@ namespace suPHP {
+ 	bool getFullPHPProcessDisplay() const;
+ 
+ 	/**
++         * Returns whether suPHP should check the target script GID in
++         * paranoid mode
++         */
++	bool getParanoidGIDCheck() const;
++
++	/**
++         * Returns whether suPHP should check the target script UID in
++         * paranoid mode
++         */
++	bool getParanoidUIDCheck() const;
++
++	/**
+          * Returns whether (minor) error message should be sent to browser
+          */
+         bool getErrorsToBrowser() const;
+-- 
+2.2.0
+

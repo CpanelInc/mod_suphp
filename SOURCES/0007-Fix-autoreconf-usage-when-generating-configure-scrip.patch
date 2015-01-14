@@ -1,0 +1,39 @@
+From b54a85d2827fbd64e0deeb45ff91bdd1c83fbd73 Mon Sep 17 00:00:00 2001
+From: Kurt Newman <kurt.newman@cpanel.net>
+Date: Thu, 15 Jan 2015 14:50:03 -0600
+Subject: [PATCH 7/7] Fix autoreconf usage when generating configure script
+
+Using this macro ensures that when we run autoreconf, we deposit
+the macros it will use into the appropriate directory.  We then
+tell aclocal to look in the same directory when it eventually
+runs.
+
+http://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.69/html_node/Input.html#Input
+---
+ Makefile.am  | 1 +
+ configure.ac | 2 ++
+ 2 files changed, 3 insertions(+)
+
+diff --git a/Makefile.am b/Makefile.am
+index af437a6..0182df2 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -1 +1,2 @@
+ SUBDIRS = src
++ACLOCAL_AMFLAGS = -I m4
+diff --git a/configure.ac b/configure.ac
+index b6c4923..0a810b6 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -12,6 +12,8 @@ AC_CONFIG_SRCDIR([src/Application.cpp])
+ # Config headers for automake
+ AM_CONFIG_HEADER([src/config.h])
+ 
++AC_CONFIG_MACRO_DIR([m4])
++
+ # Build time sanity check
+ AM_SANITY_CHECK
+ 
+-- 
+2.2.0
+

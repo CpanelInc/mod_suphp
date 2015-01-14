@@ -1,0 +1,32 @@
+From d5fde2f26436b5a2c9d7c8d53cfa5348a65926e3 Mon Sep 17 00:00:00 2001
+From: Kurt Newman <kurt.newman@cpanel.net>
+Date: Wed, 14 Jan 2015 12:20:22 -0600
+Subject: [PATCH 5/7] Add support for Apache 2.4 in configure script
+
+Case XXXXX: While mod_suphp supports Apache 2.4, the configure
+script does not recognize it.  While there are technically some
+changes that need to occur to mod_suphp when defining a module
+for use under Apache 2.4, nothing breaks.  This is because Apache
+2.4 made itself backwards-compatible; for now.
+---
+ configure.ac | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 5701a2b..b6c4923 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -65,8 +65,8 @@ if test -n "$APXS"; then
+                     | cut -f2 -d":" \
+                     | cut -f2 -d"/" \
+                     | cut -f1 -d" "`
+-    major_version=`echo $APACHE_VERSION|cut -f1,2 -d.`
+-    if test "$major_version" = "2.0" -o "$major_version" = "2.2"; then
++    major_version=`echo $APACHE_VERSION|cut -f1 -d.`
++    if test "$major_version" = "2"; then
+       APACHE_VERSION_2=true
+       APACHE_VERSION_1_3=false
+     else
+-- 
+2.2.0
+

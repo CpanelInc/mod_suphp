@@ -1,0 +1,39 @@
+From e7b57b8e53de39457559c70ad787168f3ef2318e Mon Sep 17 00:00:00 2001
+From: Kurt Newman <kurt.newman@cpanel.net>
+Date: Wed, 14 Jan 2015 12:45:54 -0600
+Subject: [PATCH 6/7] Fix void return within int context
+
+This patch was taken from SuSE and is a necessary bug fix to ensure
+suphp works correctly.
+
+http://download.opensuse.org/repositories/server:/php/openSUSE_12.2/src/
+---
+ src/Application.cpp | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/Application.cpp b/src/Application.cpp
+index 1b6e3e3..fb0f2ac 100644
+--- a/src/Application.cpp
++++ b/src/Application.cpp
+@@ -138,8 +138,7 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
+     } catch (SoftException& e) {
+         if (!config.getErrorsToBrowser()) {
+             std::cerr << e;
+-            return 2;
+-        }
++        } else {
+         std::cout << "Content-Type: text/html\n"
+                   << "Status: 500\n"
+                   << "\n"
+@@ -155,6 +154,8 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
+                   << " </body>\n"
+                   << "</html>\n";
+     }
++        return 2;
++    }
+ }
+ 
+ 
+-- 
+2.2.0
+

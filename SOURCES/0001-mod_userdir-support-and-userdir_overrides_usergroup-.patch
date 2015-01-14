@@ -1,0 +1,240 @@
+From fe48185f43a89043e9016bd0de634c1f922b75c0 Mon Sep 17 00:00:00 2001
+From: Kurt Newman <kurt.newman@cpanel.net>
+Date: Tue, 13 Jan 2015 17:20:26 -0600
+Subject: [PATCH 1/7] mod_userdir support and userdir_overrides_usergroup
+ option
+
+Case 2625: Adds userdir support, as well as a configuration option
+to instead ignore the user component of userdir, and instead
+use the domain's user.  This is 'true' by default; thus, will use
+the user specified by /~user in the URL.
+
+More information can be found at:
+ http://documentation.cpanel.net/display/EA/Apache+PHP+Request+Handling
+---
+ src/Application.cpp     | 15 +++++++++++++++
+ src/Configuration.cpp   |  7 +++++++
+ src/Configuration.hpp   |  7 +++++++
+ src/apache/mod_suphp.c  | 14 +++++++++-----
+ src/apache2/mod_suphp.c | 20 ++++++++++++++------
+ 5 files changed, 52 insertions(+), 11 deletions(-)
+
+diff --git a/src/Application.cpp b/src/Application.cpp
+index 8c0e835..d8e8ff8 100644
+--- a/src/Application.cpp
++++ b/src/Application.cpp
+@@ -369,6 +369,17 @@ void suPHP::Application::checkProcessPermissions(
+             __FILE__, __LINE__);
+     }
+ 
++    if (config.getUserdirOverridesUsergroup() && environment.hasVar("SUPHP_USERDIR_USER") && environment.hasVar("SUPHP_USERDIR_GROUP")) {
++        try {
++	    targetUsername = environment.getVar("SUPHP_USERDIR_USER");
++	    targetGroupname = environment.getVar("SUPHP_USERDIR_GROUP");
++        } catch (KeyNotFoundException& e) {
++	    throw SecurityException(
++	        "Environment variable SUPHP_USERDIR_USER or SUPHP_USERDIR_GROUP not set", 
++	        __FILE__, __LINE__);
++        }
++    }
++
+     if (targetUsername[0] == '#' && targetUsername.find_first_not_of(
+             "0123456789", 1) == std::string::npos) {
+         targetUser = api.getUserInfo(Util::strToInt(targetUsername.substr(1)));
+@@ -450,6 +461,10 @@ Environment suPHP::Application::prepareEnvironment(
+         env.deleteVar("SUPHP_USER");
+     if (env.hasVar("SUPHP_GROUP"))
+         env.deleteVar("SUPHP_GROUP");
++    if (env.hasVar("SUPHP_USERDIR_USER"))
++	env.deleteVar("SUPHP_USERDIR_USER");
++    if (env.hasVar("SUPHP_USERDIR_GROUP"))
++	env.deleteVar("SUPHP_USERDIR_GROUP");
+     if (env.hasVar("SUPHP_HANDLER"))
+         env.deleteVar("SUPHP_HANDLER");
+     if (env.hasVar("SUPHP_AUTH_USER"))
+diff --git a/src/Configuration.cpp b/src/Configuration.cpp
+index 280af5b..fbd0c46 100644
+--- a/src/Configuration.cpp
++++ b/src/Configuration.cpp
+@@ -97,6 +97,7 @@ suPHP::Configuration::Configuration() {
+ #else
+     this->check_vhost_docroot = true;
+ #endif
++    this->userdir_overrides_usergroup = false;
+     this->errors_to_browser = false;
+     this->env_path = "/bin:/usr/bin";
+     this->loglevel = LOGLEVEL_INFO;
+@@ -143,6 +144,8 @@ void suPHP::Configuration::readFromFile(File& file)
+                     this->strToBool(value);
+             else if (key == "check_vhost_docroot")
+                 this->check_vhost_docroot = this->strToBool(value);
++	    else if (key == "userdir_overrides_usergroup")
++		this->userdir_overrides_usergroup = this->strToBool(value);
+             else if (key == "errors_to_browser")
+                 this->errors_to_browser = this->strToBool(value);
+             else if (key == "env_path")
+@@ -201,6 +204,10 @@ bool suPHP::Configuration::getCheckVHostDocroot() const {
+     return this->check_vhost_docroot;
+ }
+ 
++bool suPHP::Configuration::getUserdirOverridesUsergroup() const {
++    return this->userdir_overrides_usergroup;
++}
++
+ bool suPHP::Configuration::getAllowFileGroupWriteable() const {
+     return this->allow_file_group_writeable;
+ }
+diff --git a/src/Configuration.hpp b/src/Configuration.hpp
+index b315ff1..2e99b6c 100644
+--- a/src/Configuration.hpp
++++ b/src/Configuration.hpp
+@@ -50,6 +50,7 @@ namespace suPHP {
+         bool allow_file_others_writeable;
+         bool allow_directory_others_writeable;
+         bool check_vhost_docroot;
++	bool userdir_overrides_usergroup;
+         bool errors_to_browser;
+         std::string env_path;
+         std::map<std::string, std::string> handlers;
+@@ -108,6 +109,12 @@ namespace suPHP {
+         bool getCheckVHostDocroot() const;
+         
+         /**
++         * Returns wheter suPHP should use the user and group provided
++         * by Apache on userdir requests in preference to suPHP_UserGroup 
++	 */
++	bool getUserdirOverridesUsergroup() const;
++	
++	/**
+          * Returns wheter suPHP should ignore the group write bit of
+          * the script file
+          */
+diff --git a/src/apache/mod_suphp.c b/src/apache/mod_suphp.c
+index c0dfc87..f30c54e 100644
+--- a/src/apache/mod_suphp.c
++++ b/src/apache/mod_suphp.c
+@@ -510,6 +510,7 @@ static int suphp_handler(request_rec *r) {
+ #ifdef SUPHP_USE_USERGROUP
+     char *ud_user = NULL;
+     char *ud_group = NULL;
++    int ud_success = 0;
+ #endif
+ 
+     struct stat finfo;
+@@ -574,15 +575,12 @@ static int suphp_handler(request_rec *r) {
+     }
+ 
+ #ifdef SUPHP_USE_USERGROUP
+-    if ((sconf->target_user == NULL || sconf->target_group == NULL)
+-        && (dconf->target_user == NULL || dconf->target_group == NULL)) {
+ 
+         /* Identify mod_userdir request
+            As Apache 1.3 does not yet provide a clean way to see
+            whether a request was handled by mod_userdir, we assume
+            this is true for any request beginning with ~ */
+ 
+-        int ud_success = 0; /* set to 1 on success */
+ 
+         if (!strncmp("/~", r->uri, 2)) {
+             char *username = ap_pstrdup(r->pool, r->uri + 2);
+@@ -614,14 +612,14 @@ static int suphp_handler(request_rec *r) {
+             }
+         }
+ 
+-        if (!ud_success) {
++        if (!ud_success && ((sconf->target_user == NULL || sconf->target_group == NULL)
++                            && (dconf->target_user == NULL || dconf->target_group == NULL))) {
+             /* This is not a userdir request and user/group are not
+                set, so log the error and return */
+             ap_log_rerror(APLOG_MARK, APLOG_ERR, r,
+                           "No user or group set - set suPHP_UserGroup");
+             return HTTP_INTERNAL_SERVER_ERROR;
+         }
+-    }
+ #endif /* SUPHP_USE_USERGROUP */
+ 
+ 
+@@ -637,6 +635,8 @@ static int suphp_handler(request_rec *r) {
+ #ifdef SUPHP_USE_USERGROUP
+     ap_table_unset(r->subprocess_env, "SUPHP_USER");
+     ap_table_unset(r->subprocess_env, "SUPHP_GROUP");
++    ap_table_unset(r->subprocess_env, "SUPHP_USERDIR_USER");
++    ap_table_unset(r->subprocess_env, "SUPHP_USERDIR_GROUP");
+ #endif /* SUPHP_USE_USERGROUP */
+ 
+     if (dconf->php_config) {
+@@ -684,6 +684,10 @@ static int suphp_handler(request_rec *r) {
+     } else {
+         ap_table_set(r->subprocess_env, "SUPHP_GROUP", ud_group);
+     }
++    if (ud_success) {
++	ap_table_set(r->subprocess_env, "SUPHP_USERDIR_USER", ud_user);
++	ap_table_set(r->subprocess_env, "SUPHP_USERDIR_GROUP", ud_group);
++    }
+ #endif /* SUPHP_USE_USERGROUP */
+ 
+     /* Fork child process */
+diff --git a/src/apache2/mod_suphp.c b/src/apache2/mod_suphp.c
+index d507ad4..4233d22 100644
+--- a/src/apache2/mod_suphp.c
++++ b/src/apache2/mod_suphp.c
+@@ -754,6 +754,8 @@ static int suphp_script_handler(request_rec *r)
+ #ifdef SUPHP_USE_USERGROUP
+     char *ud_user = NULL;
+     char *ud_group = NULL;
++    int ud_success = 0;
++    ap_unix_identity_t *userdir_id = NULL;
+ #endif
+ 
+     apr_bucket_brigade *bb;
+@@ -803,21 +805,18 @@ static int suphp_script_handler(request_rec *r)
+     }
+ 
+ #ifdef SUPHP_USE_USERGROUP
+-    if ((sconf->target_user == NULL || sconf->target_group == NULL)
+-        && (dconf->target_user == NULL || dconf->target_group == NULL))
+-    {
+         /* Check for userdir request */
+-        ap_unix_identity_t *userdir_id = NULL;
+         userdir_id = ap_run_get_suexec_identity(r);
+         if (userdir_id != NULL && userdir_id->userdir) {
+             ud_user = apr_psprintf(r->pool, "#%ld", (long) userdir_id->uid);
+             ud_group = apr_psprintf(r->pool, "#%ld", (long) userdir_id->gid);
+-        } else {
++            ud_success = 1;
++        } else if ((sconf->target_user == NULL || sconf->target_group == NULL)
++                   && (dconf->target_user == NULL || dconf->target_group == NULL)) {
+             ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r,
+                           "No user or group set - set suPHP_UserGroup");
+             return HTTP_INTERNAL_SERVER_ERROR;
+         }
+-    }
+ #endif
+ 
+     /* prepare argv for new process */
+@@ -838,6 +837,8 @@ static int suphp_script_handler(request_rec *r)
+ #ifdef SUPHP_USE_USERGROUP
+     apr_table_unset(r->subprocess_env, "SUPHP_USER");
+     apr_table_unset(r->subprocess_env, "SUPHP_GROUP");
++    apr_table_unset(r->subprocess_env, "SUPHP_USERDIR_USER");
++    apr_table_unset(r->subprocess_env, "SUPHP_USERDIR_GROUP");
+ #endif
+ 
+     if (dconf->php_config)
+@@ -907,6 +908,13 @@ static int suphp_script_handler(request_rec *r)
+         apr_table_setn(r->subprocess_env, "SUPHP_GROUP",
+                        apr_pstrdup(r->pool, ud_group));
+     }
++    if (ud_success)
++    {
++	apr_table_setn(r->subprocess_env, "SUPHP_USERDIR_USER",
++		       apr_pstrdup(r->pool, ud_user));
++	apr_table_setn(r->subprocess_env, "SUPHP_USERDIR_GROUP",
++		       apr_pstrdup(r->pool, ud_group));
++    }
+ #endif
+ 
+     env = ap_create_environment(p, r->subprocess_env);
+-- 
+2.2.0
+

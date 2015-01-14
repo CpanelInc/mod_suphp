@@ -1,0 +1,14 @@
+/var/log/httpd/suphp_log {
+    compress
+    dateext
+    maxage 365
+    rotate 99
+    size=+1024k
+    notifempty
+    missingok
+    create 0640 root root
+    postrotate
+     /etc/init.d/httpd reload
+    endscript
+}
+
