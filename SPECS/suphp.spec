@@ -45,7 +45,7 @@ Patch6:         0007-Fix-autoreconf-usage-when-generating-configure-scrip.patch
 BuildRequires:  httpd-devel
 BuildRequires:  gcc-c++
 BuildRequires:  libtool
-Requires:	    httpd-mmn = %{_httpd_mmn}
+Requires:       httpd-mmn = %{_httpd_mmn}
 Requires:       logrotate
 Conflicts:      mod_ruid2
 BuildRoot:      %{_tmppath}/%{name}-%{version}-root
