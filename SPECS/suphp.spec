@@ -24,7 +24,7 @@
 
 Name:           suphp
 Version:        0.7.2
-Release:        0
+Release:        cpanel.1
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
 Summary:        Execute PHP scripts with the permissions of their owner.
@@ -72,7 +72,7 @@ mkdir -p m4
 autoreconf -fi
 
 %configure \
-    --with-apache-user=apache \
+    --with-apache-user=nobody \
     --with-setid-mode=paranoid \
     --with-apr=%{_usr}/bin/apr-1-config \
     --with-apxs=%{_httpd_apxs} \
@@ -94,8 +94,8 @@ rm -rf %{buildroot}
 
 %files
 %defattr(0640,root,root,0755)
-%attr(0750,root,apache) %{_httpd_moddir}/mod_suphp.so
-%attr(4750,root,apache) %{_sbindir}/suphp
+%attr(0750,root,nobody) %{_httpd_moddir}/mod_suphp.so
+%attr(4750,root,nobody) %{_sbindir}/suphp
 %config(noreplace) %{_sysconfdir}/suphp.conf
 %config(noreplace) %{_sysconfdir}/logrotate.d/suphp
 %config(noreplace) %{_httpd_confdir}/00-suphp.conf
@@ -105,7 +105,10 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
-* Wed Jan 14 2014 kurt.newman@cpanel.net
+* Mon Feb 02 2015 trinity.quirk@cpanel.net
+- Running as 'nobody' user
+
+* Wed Jan 14 2015 kurt.newman@cpanel.net
 - Updated for cPanel support on CentOS 6
 
 * Sun Aug  4 2013 novell@tower-net.de
