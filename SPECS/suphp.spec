@@ -42,12 +42,12 @@ Patch3:         0004-Force-rebuild-of-configure-script.patch
 Patch4:         0005-Add-support-for-Apache-2.4-in-configure-script.patch
 Patch5:         0006-Fix-void-return-within-int-context.patch
 Patch6:         0007-Fix-autoreconf-usage-when-generating-configure-scrip.patch
-BuildRequires:  httpd-devel
+BuildRequires:  ea-apache2-devel
 BuildRequires:  gcc-c++
 BuildRequires:  libtool
-Requires:       httpd-mmn = %{_httpd_mmn}
+Requires:       ea-apache2-mmn = %{_httpd_mmn}
 Requires:       logrotate
-Conflicts:      mod_ruid2
+Conflicts:      ea-mod_ruid2
 BuildRoot:      %{_tmppath}/%{name}-%{version}-root
 
 %description
@@ -87,7 +87,7 @@ install -D %{SOURCE4}             %{buildroot}%{_sysconfdir}/suphp.conf
 install -D %{SOURCE3}             %{buildroot}%{_sysconfdir}/logrotate.d/suphp
 install -D %{SOURCE1}             %{buildroot}%{_httpd_confdir}/00-suphp.conf
 install -D %{SOURCE2}             %{buildroot}%{_httpd_modconfdir}/90-suphp.conf
-install -D /dev/null              %{buildroot}%{_localstatedir}/log/httpd/suphp_log
+install -D /dev/null              %{buildroot}%{_localstatedir}/log/apache2/suphp_log
 
 %clean
 rm -rf %{buildroot}
@@ -100,7 +100,7 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/logrotate.d/suphp
 %config(noreplace) %{_httpd_confdir}/00-suphp.conf
 %config(noreplace) %{_httpd_modconfdir}/90-suphp.conf
-%ghost %{_localstatedir}/log/httpd/suphp_log
+%ghost %{_localstatedir}/log/apache2/suphp_log
 %doc %attr(0644,root,root) AUTHORS  ChangeLog  COPYING  NEWS
 %doc %attr(0644,root,root) doc/*
 
