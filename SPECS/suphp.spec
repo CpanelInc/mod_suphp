@@ -22,7 +22,7 @@
 # the RPM macros necessary to expand %{_httpd_*} through out this
 # spec file.
 
-Name:           suphp
+Name:           ea-mod_suphp
 Version:        0.7.2
 Release:        cpanel.1
 License:        GPL-2.0
@@ -30,7 +30,7 @@ Vendor:         cPanel, Inc.
 Summary:        Execute PHP scripts with the permissions of their owner.
 Url:            http://www.suphp.org
 Group:          System Environment/Daemons
-Source:         http://suphp.org/download/%{name}-%{version}.tar.gz
+Source:         http://suphp.org/download/suphp-%{version}.tar.gz
 Source1:        httpd-suphp.conf
 Source2:        httpd-suphp.modules.conf
 Source3:        logrotate
@@ -57,7 +57,7 @@ that is called by the Apache module to change the uid of the process executing
 the PHP interpreter.
 
 %prep
-%setup -q
+%setup -q -n suphp-%{version}
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
@@ -76,7 +76,7 @@ autoreconf -fi
     --with-setid-mode=paranoid \
     --with-apr=%{_usr}/bin/apr-1-config \
     --with-apxs=%{_httpd_apxs} \
-    --with-logfile=%{_localstatedir}/log/httpd/suphp_log
+    --with-logfile=%{_localstatedir}/log/apache2/suphp_log
 
 make %{?_smp_mflags}
 
