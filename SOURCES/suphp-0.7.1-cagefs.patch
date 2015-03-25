@@ -1,0 +1,68 @@
+diff -rupN suphp-0.7.1/src/Application.cpp suphp-0.7.1.new/src/Application.cpp
+--- suphp-0.7.1/src/Application.cpp	2009-03-14 13:55:25.000000000 -0400
++++ suphp-0.7.1.new/src/Application.cpp	2010-09-23 05:49:30.000000000 -0400
+@@ -37,6 +37,11 @@
+ 
+ #include "Application.hpp"
+ 
++#ifdef ENABLE_LVE
++#include <pwd.h>
++#include <dlfcn.h>
++#endif
++
+ using namespace suPHP;
+ 
+ 
+@@ -422,6 +427,29 @@ void suPHP::Application::changeProcessPe
+     throw (SystemException, SoftException, SecurityException) {
+     API& api = API_Helper::getSystemAPI();
+ 
++#ifdef ENABLE_LVE
++#ifndef SECURELVE_MIN_UID
++#define SECURELVE_MIN_UID 100
++#endif
++    /* cagefs 2.0 suphp patch */
++    void *lib_handle = dlopen("liblve.so.0", RTLD_LAZY);
++    if (lib_handle) {
++        Logger& logger = API_Helper::getSystemAPI().getSystemLogger();
++        char *error; char error_msg[8192];   dlerror();    /* Clear any existing error */
++        int (*jail)(struct passwd *, int, char*) = (int (*)(passwd*, int, char*)) dlsym(lib_handle, "lve_jail_uid");
++        if ((error = dlerror()) != NULL) {
++            std::string err("Failed to init LVE library ");
++            err += error; logger.logWarning(err);
++            throw SoftException(err, __FILE__, __LINE__);
++        }
++        int result = jail(getpwuid(targetUser.getUid()), SECURELVE_MIN_UID, error_msg);
++        if (result < 0) {
++	         std::string err("CageFS jail error ");
++            err += error_msg; logger.logWarning(err);
++            throw SoftException(err, __FILE__, __LINE__);
++        }
++    }
++#endif
+     // Set new group first, because we still need super-user privileges
+     // for this
+     api.setProcessGroup(targetGroup);
+diff -rupN suphp-0.7.2-orig/configure.ac suphp-0.7.2/configure.ac
+--- suphp-0.7.2-orig/configure.ac	2013-05-20 11:26:56.000000000 -0500
++++ suphp-0.7.2/configure.ac	2015-03-24 16:44:31.811003003 -0500
+@@ -168,6 +168,19 @@ AC_ARG_ENABLE([checkpath], 
+ 	      ])
+ 
+ 
++# Cloudlinux LVE
++
++AC_ARG_ENABLE([lve], 
++              AC_HELP_STRING([--enable-lve],
++                             [Include CloudLinux LVE support]),
++              [
++               if test "$enableval" = "yes"; then
++                 AC_DEFINE(ENABLE_LVE, 1, [Define if you want LVE support])
++                 AC_CHECK_LIB([dl], [dlopen])
++               fi
++              ])
++
++
+ # Minimum UID
+ 
+ AC_ARG_WITH([min-uid], 

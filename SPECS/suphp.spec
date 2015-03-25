@@ -42,6 +42,7 @@ Patch3:         0004-Force-rebuild-of-configure-script.patch
 Patch4:         0005-Add-support-for-Apache-2.4-in-configure-script.patch
 Patch5:         0006-Fix-void-return-within-int-context.patch
 Patch6:         0007-Fix-autoreconf-usage-when-generating-configure-scrip.patch
+Patch7:         suphp-0.7.1-cagefs.patch
 BuildRequires:  ea-apache2-devel
 BuildRequires:  gcc-c++
 BuildRequires:  libtool
@@ -65,6 +66,7 @@ the PHP interpreter.
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
 
 %build
 
@@ -76,7 +78,8 @@ autoreconf -fi
     --with-setid-mode=paranoid \
     --with-apr=%{_usr}/bin/apr-1-config \
     --with-apxs=%{_httpd_apxs} \
-    --with-logfile=%{_localstatedir}/log/apache2/suphp_log
+    --with-logfile=%{_localstatedir}/log/apache2/suphp_log \
+    --enable-lve
 
 make %{?_smp_mflags}
 
