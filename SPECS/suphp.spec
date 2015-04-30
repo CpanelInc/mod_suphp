@@ -30,7 +30,7 @@
 
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
-Release:        1%{dist}
+Release:        2%{dist}
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
 Summary:        Execute PHP scripts with the permissions of their owner.
@@ -112,6 +112,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Thu Apr 30 2015 Dan Muey <dan@cpanel.net> - 0.7.2-2
+- Corrected suphp.conf's logfile value
+
 * Fri Mar 27 2015 S. Kurt Newman <kurt.newman@cpanel.net> - 0.7.2-1
 - Added proper release number
 - Removed logrotate in favor of WHM's implemenation
