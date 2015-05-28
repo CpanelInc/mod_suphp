@@ -54,7 +54,7 @@ BuildRequires:  gcc-c++
 BuildRequires:  libtool
 Requires:       ea-apache24-mmn = %{_httpd_mmn}
 Requires:       ea-apr >= 1.5.0
-Conflicts:      ea-apache2-mod_ruid2
+Conflicts:      ea-apache24-mod_ruid2
 BuildRoot:      %{_tmppath}/%{name}-%{version}-root
 
 %description
