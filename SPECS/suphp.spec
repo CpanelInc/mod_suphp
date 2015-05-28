@@ -101,8 +101,8 @@ install -D /dev/null              %{buildroot}%{_localstatedir}/log/apache2/suph
 rm -rf %{buildroot}
 
 %files
-%defattr(0640,root,root,0755)
-%attr(0750,root,nobody) %{_httpd_moddir}/mod_suphp.so
+%defattr(0644,root,root,0755)
+%attr(0755,root,nobody) %{_httpd_moddir}/mod_suphp.so
 %attr(4750,root,nobody) %{_sbindir}/suphp
 %config(noreplace) %{_sysconfdir}/suphp.conf
 %config(noreplace) %{_httpd_confdir}/00-suphp.conf
@@ -112,6 +112,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Wed May 27 2015 Matt Dees <matt.dees@cpanel.net> - 0.7.2-3
+- Fix file permissions
+
 * Thu Apr 30 2015 Dan Muey <dan@cpanel.net> - 0.7.2-2
 - Corrected suphp.conf's logfile value
 
