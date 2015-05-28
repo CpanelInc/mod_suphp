@@ -23,14 +23,14 @@
 # spec file.
 
 # Defining the package namespace
-%global ns_name ea
+%global ns_name ea-apache24
 %global upstream_name mod_suphp
 
 %define debug_package %{nil}
 
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
-Release:        4%{dist}
+Release:        5%{dist}
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
 Summary:        Execute PHP scripts with the permissions of their owner.
@@ -54,7 +54,7 @@ BuildRequires:  gcc-c++
 BuildRequires:  libtool
 Requires:       ea-apache24-mmn = %{_httpd_mmn}
 Requires:       ea-apr >= 1.5.0
-Conflicts:      ea-mod_ruid2
+Conflicts:      ea-apache2-mod_ruid2
 BuildRoot:      %{_tmppath}/%{name}-%{version}-root
 
 %description
@@ -112,6 +112,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Thu May 28 2015 Darren Mobley <darren@cpanel.net> - 0.7.2-5
+- Changed ea-mod to ea-apache24-mod
+
 * Thu May 28 2015 Darren Mobley <darren@cpanel.net> - 0.7.2-4
 - Changed ea-apache2 to ea-apache24
 
