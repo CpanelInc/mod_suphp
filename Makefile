@@ -47,9 +47,10 @@ GIT_BRANCH := $(bamboo_repository_git_branch)
 endif
 
 # if we're pushing to master, push to the upstream project
-BUILD_TARGET := home:$(OBS_USERNAME):$(OBS_PROJECT):$(GIT_BRANCH)
-ifeq bamboo_repository_git_branch, 'master'
+ifeq ($(bamboo_repository_git_branch),master)
 BUILD_TARGET := $(OBS_PROJECT)
+else
+BUILD_TARGET := home:$(OBS_USERNAME):$(OBS_PROJECT):$(GIT_BRANCH)
 endif
 
 OBS_WORKDIR := $(BUILD_TARGET)/$(OBS_PACKAGE)
