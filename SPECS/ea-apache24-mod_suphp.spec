@@ -48,13 +48,14 @@ Patch4:         0005-Add-support-for-Apache-2.4-in-configure-script.patch
 Patch5:         0006-Fix-void-return-within-int-context.patch
 Patch6:         0007-Fix-autoreconf-usage-when-generating-configure-scrip.patch
 Patch7:         suphp-0.7.1-cagefs.patch
-BuildRequires:  ea-apache24-devel
+BuildRequires:  %{ns_name}-devel
 BuildRequires:  ea-apr-devel >= 1.5.0
 BuildRequires:  gcc-c++
 BuildRequires:  libtool
-Requires:       ea-apache24-mmn = %{_httpd_mmn}
+Requires:       %{ns_name}-mmn = %{_httpd_mmn}
 Requires:       ea-apr >= 1.5.0
-Conflicts:      ea-apache24-mod_ruid2
+Conflicts:      %{ns_name}-mod_ruid2 %{ns_name}-mpm_itk
+Provides:       %{ns_name}-exec_code_asuser %{ns_name}-exec_php_asuser
 BuildRoot:      %{_tmppath}/%{name}-%{version}-root
 
 %description
