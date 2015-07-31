@@ -30,7 +30,7 @@
 
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
-Release:        5%{dist}
+Release:        6%{dist}
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
 Summary:        Execute PHP scripts with the permissions of their owner.
@@ -50,6 +50,7 @@ Patch6:         0007-Fix-autoreconf-usage-when-generating-configure-scrip.patch
 Patch7:         suphp-0.7.1-cagefs.patch
 BuildRequires:  %{ns_name}-devel
 BuildRequires:  ea-apr-devel >= 1.5.0
+BuildRequires:  ea-apr-util-devel
 BuildRequires:  gcc-c++
 BuildRequires:  libtool
 Requires:       %{ns_name}-mmn = %{_httpd_mmn}
@@ -83,7 +84,7 @@ autoreconf -fi
 %configure \
     --with-apache-user=nobody \
     --with-setid-mode=paranoid \
-    --with-apr=%{_usr}/bin/apr-1-config \
+    --with-apr=%{ea_apr_dir} \
     --with-apxs=%{_httpd_apxs} \
     --with-logfile=%{_localstatedir}/log/apache2/suphp_log \
     --enable-lve
@@ -113,6 +114,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Fri Jul 31 2015 Trinity Quirk <trinity.quirk@cpanel.net> - 0.7.2-6
+- Using new apr macros
+
 * Thu May 28 2015 Darren Mobley <darren@cpanel.net> - 0.7.2-5
 - Changed ea-mod to ea-apache24-mod
 
