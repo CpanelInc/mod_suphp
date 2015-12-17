@@ -30,7 +30,7 @@
 
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
-Release:        6%{dist}
+Release:        7%{dist}
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
 Summary:        Execute PHP scripts with the permissions of their owner.
@@ -114,6 +114,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Thu Dec 17 2015 Matt Dees <matt@cpanel.net> 0.7.2-7
+- Add support for PHP7
+
 * Fri Jul 31 2015 Trinity Quirk <trinity.quirk@cpanel.net> - 0.7.2-6
 - Using new apr macros
 
