@@ -30,7 +30,9 @@
 
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
-Release:        7%{dist}
+# Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4562 for more details
+%define release_prefix 14
+Release: %{release_prefix}%{?dist}.cpanel
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
 Summary:        Execute PHP scripts with the permissions of their owner.
@@ -114,6 +116,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Mon Jun 20 2016 Dan Muey <dan@cpanel.net> - 0.7.2-14
+- EA-4383: Update Release value to OBS-proof versioning
+
 * Thu Dec 17 2015 Matt Dees <matt@cpanel.net> 0.7.2-7
 - Add support for PHP7
 
