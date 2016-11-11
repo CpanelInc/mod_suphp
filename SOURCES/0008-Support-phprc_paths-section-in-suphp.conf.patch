@@ -1,0 +1,127 @@
+diff --git a/src/Application.cpp b/src/Application.cpp
+index fb0f2ac..edb3409 100644
+--- a/src/Application.cpp
++++ b/src/Application.cpp
+@@ -57,6 +57,7 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
+ #endif
+ 
+     std::string interpreter;
++    std::string phprc_path;
+     TargetMode targetMode;
+     Environment newEnv;
+ 
+@@ -111,6 +112,12 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
+         this->changeProcessPermissions(config, targetUser, targetGroup);
+ 
+         interpreter = this->getInterpreter(env, config);
++    
++        phprc_path = this->getPHPRCPath(env, config);
++        if (phprc_path != "") {
++	    env.putVar("SUPHP_PHP_CONFIG", phprc_path);
++        }
++
+         targetMode = this->getTargetMode(interpreter);
+ 
+         // Prepare environment for new process
+@@ -498,6 +505,18 @@ Environment suPHP::Application::prepareEnvironment(
+ }
+ 
+ 
++std::string suPHP::Application::getPHPRCPath(
++    const Environment& env, const Configuration& config)
++    throw (SecurityException) {
++    if (!env.hasVar("SUPHP_HANDLER"))
++	throw SecurityException("Environment variable SUPHP_HANDLER not set",
++				__FILE__, __LINE__);
++    std::string handler = env.getVar("SUPHP_HANDLER");
++    
++    std::string phprc_path = config.getPHPRCPath(handler);
++    return phprc_path;
++}
++
+ std::string suPHP::Application::getInterpreter(
+     const Environment& env, const Configuration& config)
+     throw (SecurityException) {
+diff --git a/src/Application.hpp b/src/Application.hpp
+index 82b8d20..6f8454c 100644
+--- a/src/Application.hpp
++++ b/src/Application.hpp
+@@ -110,6 +110,13 @@ namespace suPHP {
+             throw (KeyNotFoundException);
+ 
+         /**
++	 * Returns the php.ini path defined in the config for script being executed
++	 */
++	std::string getPHPRCPath(const Environment& env,
++				   const Configuration& config)
++	    throw (SecurityException);
++	
++	/**
+          * Returns interpreter for script being executed
+          */
+         std::string getInterpreter(const Environment& env,
+diff --git a/src/Configuration.cpp b/src/Configuration.cpp
+index f1ea3a6..872010b 100644
+--- a/src/Configuration.cpp
++++ b/src/Configuration.cpp
+@@ -190,7 +190,20 @@ void suPHP::Configuration::readFromFile(File& file)
+             this->handlers.insert(p);
+         }
+     }
+-    
++    // Get configured phprc_paths 
++    if (ini.hasSection("phprc_paths")) {
++	IniSection sect = ini.getSection("phprc_paths");
++	std::vector<std::string> keys = sect.getKeys();
++	std::vector<std::string>::iterator i;
++	for (i = keys.begin(); i < keys.end(); i++) {
++	    std::string key = *i;
++	    std::string value = sect.getValue(key);
++	    std::pair<std::string, std::string> p;
++	    p.first = key;
++	    p.second = value;
++	    this->phprc_paths.insert(p);
++	}
++    }
+ }
+ 
+ std::string suPHP::Configuration::getLogfile() const {
+@@ -263,6 +276,14 @@ std::string suPHP::Configuration::getInterpreter(std::string handler) const
+     }
+ }
+ 
++std::string suPHP::Configuration::getPHPRCPath(std::string handler) const {
++    if (this->phprc_paths.find(handler) != this->phprc_paths.end()) {
++	return this->phprc_paths.find(handler) -> second;
++    } else {
++    return std::string("");
++    }
++}
++
+ int suPHP::Configuration::getMinUid() const {
+     return this->min_uid;
+ }
+diff --git a/src/Configuration.hpp b/src/Configuration.hpp
+index 6f1aa12..f8b8930 100644
+--- a/src/Configuration.hpp
++++ b/src/Configuration.hpp
+@@ -54,6 +54,7 @@ namespace suPHP {
+         bool errors_to_browser;
+         std::string env_path;
+         std::map<std::string, std::string> handlers;
++	std::map<std::string, std::string> phprc_paths;
+         LogLevel loglevel;
+         int min_uid;
+         int min_gid;
+@@ -170,6 +171,11 @@ namespace suPHP {
+         std::string getEnvPath() const;
+ 
+         /**
++	 * Returns phprc_path string for the specified handler
++	 */
++	std::string getPHPRCPath(std::string handler) const;
++	
++        /**
+          * Returns interpreter string for specified handler
+          */
+         std::string getInterpreter(std::string handler) const

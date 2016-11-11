@@ -1,6 +1,31 @@
-diff -rupN suphp-0.7.1/src/Application.cpp suphp-0.7.1.new/src/Application.cpp
---- suphp-0.7.1/src/Application.cpp	2009-03-14 13:55:25.000000000 -0400
-+++ suphp-0.7.1.new/src/Application.cpp	2010-09-23 05:49:30.000000000 -0400
+diff --git a/configure.ac b/configure.ac
+index 0a810b6..cdf7ea4 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -170,6 +170,19 @@ AC_ARG_ENABLE([checkpath],
+ 	      ])
+ 
+ 
++# Cloudlinux LVE
++
++AC_ARG_ENABLE([lve], 
++              AC_HELP_STRING([--enable-lve],
++                             [Include CloudLinux LVE support]),
++              [
++               if test "$enableval" = "yes"; then
++                 AC_DEFINE(ENABLE_LVE, 1, [Define if you want LVE support])
++                 AC_CHECK_LIB([dl], [dlopen])
++               fi
++              ])
++
++
+ # Minimum UID
+ 
+ AC_ARG_WITH([min-uid], 
+diff --git a/src/Application.cpp b/src/Application.cpp
+index edb3409..0d6e34a 100644
+--- a/src/Application.cpp
++++ b/src/Application.cpp
 @@ -37,6 +37,11 @@
  
  #include "Application.hpp"
@@ -13,7 +38,7 @@ diff -rupN suphp-0.7.1/src/Application.cpp suphp-0.7.1.new/src/Application.cpp
  using namespace suPHP;
  
  
-@@ -422,6 +427,29 @@ void suPHP::Application::changeProcessPe
+@@ -441,6 +446,29 @@ void suPHP::Application::changeProcessPermissions(
      throw (SystemException, SoftException, SecurityException) {
      API& api = API_Helper::getSystemAPI();
  
@@ -43,26 +68,3 @@ diff -rupN suphp-0.7.1/src/Application.cpp suphp-0.7.1.new/src/Application.cpp
      // Set new group first, because we still need super-user privileges
      // for this
      api.setProcessGroup(targetGroup);
-diff -rupN suphp-0.7.2-orig/configure.ac suphp-0.7.2/configure.ac
---- suphp-0.7.2-orig/configure.ac	2013-05-20 11:26:56.000000000 -0500
-+++ suphp-0.7.2/configure.ac	2015-03-24 16:44:31.811003003 -0500
-@@ -168,6 +168,19 @@ AC_ARG_ENABLE([checkpath], 
- 	      ])
- 
- 
-+# Cloudlinux LVE
-+
-+AC_ARG_ENABLE([lve], 
-+              AC_HELP_STRING([--enable-lve],
-+                             [Include CloudLinux LVE support]),
-+              [
-+               if test "$enableval" = "yes"; then
-+                 AC_DEFINE(ENABLE_LVE, 1, [Define if you want LVE support])
-+                 AC_CHECK_LIB([dl], [dlopen])
-+               fi
-+              ])
-+
-+
- # Minimum UID
- 
- AC_ARG_WITH([min-uid], 
