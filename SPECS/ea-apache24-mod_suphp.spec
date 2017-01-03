@@ -31,7 +31,7 @@
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4562 for more details
-%define release_prefix 16
+%define release_prefix 17
 Release: %{release_prefix}%{?dist}.cpanel
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
@@ -51,6 +51,7 @@ Patch5:         0006-Fix-void-return-within-int-context.patch
 Patch6:         0007-Fix-autoreconf-usage-when-generating-configure-scrip.patch
 Patch7:         0008-Support-phprc_paths-section-in-suphp.conf.patch
 Patch8:         suphp-0.7.1-cagefs.patch
+Patch9:         0009-Update-allow_file_group_writeable-with-more.patch
 BuildRequires:  %{ns_name}-devel
 BuildRequires:  ea-apr-devel >= 1.5.0
 BuildRequires:  ea-apr-util-devel
@@ -79,6 +80,7 @@ the PHP interpreter.
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
+%patch9 -p1
 
 %build
 
@@ -118,6 +120,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Wed Dec 14 2016 S. Kurt Newman <kurt.newman@cpanel.net> - 0.7.2-17
+- Added new allow_file_group_writeable patch (EA-4868)
+
 * Mon Nov 07 2016 Dan Muey <dan@cpanel.net> - 0.7.2-16
 - EA-5202: Add ea3 patch to support phprc_paths section in suphp.conf
 
