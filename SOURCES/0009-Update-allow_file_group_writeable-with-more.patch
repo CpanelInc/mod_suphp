@@ -1,0 +1,270 @@
+From c9e4299de262106fd401a98c72bc24a79b310b19 Mon Sep 17 00:00:00 2001
+From: Kurt Newman <kurt.newman@cpanel.net>
+Date: Tue, 13 Dec 2016 16:48:47 -0600
+Subject: [PATCH] Update allow_file_group_writeable with more flexibility
+
+Case EA-4868: This updates the allow_file_group_writeable config
+option with 3 values, instead of the boolean true/false.  This can
+now also be the value 'cpanel'.
+
+Traditionally, this was a simple test case.  Though by default,
+cPanel configures suphp to the same user/group of the owner
+of the domain.  Thus, we could turn off allow_file_group_writeable
+and it really doesn't hurt anything security-wise.
+
+Unfortunately, it does prevent Windows users who copy files via
+WinSFTP to break since the permissions it defaults to are 0666;
+and after the applied umask it's 0664.  Either way, suphp won't
+run it because the group write bit is set.
+
+This patch updates the setting with a 'cpanel' option to go
+ahead and allow the group write bit to be set, but only if the
+user is the only person in the group (specifically, no other
+users defined in the user's group within /etc/group).
+
+If you assign multiple users to the same group in /etc/passwd,
+this then check is useless and this option doesn't apply
+to you.
+---
+ doc/CONFIG            |  8 +++++++-
+ src/API.hpp           |  7 +++++++
+ src/API_Linux.cpp     | 16 +++++++++++++++-
+ src/API_Linux.hpp     |  7 +++++++
+ src/Application.cpp   | 23 +++++++++++++++++++++--
+ src/Configuration.cpp | 13 +++++++++----
+ src/Configuration.hpp |  4 ++--
+ src/GroupInfo.cpp     |  4 ++++
+ src/GroupInfo.hpp     |  6 ++++++
+ 9 files changed, 78 insertions(+), 10 deletions(-)
+
+diff --git a/doc/CONFIG b/doc/CONFIG
+index 0de93cb..05e7946 100644
+--- a/doc/CONFIG
++++ b/doc/CONFIG
+@@ -84,7 +84,13 @@ chroot:
+   as described above.
+ 
+ allow_file_group_writeable:
+-  Allow files to be group writeable. Is disabled by default.
++  Allow files to be group writeable.  This can have the following settings:
++   - true (always allow execution when the group write bit is set)
++   - false (never allow execution when the group write bit is set)
++   - cpanel (when the group write bit is set, allow execution but only if
++             there are no other users in the supplemental group list)
++
++  This is set to 'false' by default.
+ 
+ allow_directory_group_writeable:
+   Allow directories scripts are residing in to be group writeable.
+diff --git a/src/API.hpp b/src/API.hpp
+index 5d84ebe..c6f033a 100644
+--- a/src/API.hpp
++++ b/src/API.hpp
+@@ -133,6 +133,13 @@ namespace suPHP {
+          */
+         virtual std::string GroupInfo_getGroupname(const GroupInfo& ginfo) 
+             const throw (LookupException) =0;
++
++        /**
++         * Returns the number of supplementary group members.
++         *  NOTE: This doesn't include the primary group member.
++         */
++        virtual unsigned int GroupInfo_getGroupMemberCount(const GroupInfo& ginfo) const
++            throw (LookupException) =0;
+         
+         /**
+          * Checks whether file exists
+diff --git a/src/API_Linux.cpp b/src/API_Linux.cpp
+index 9ba0890..4a5fd39 100644
+--- a/src/API_Linux.cpp
++++ b/src/API_Linux.cpp
+@@ -228,13 +228,27 @@ std::string suPHP::API_Linux::GroupInfo_getGroupname(const GroupInfo& ginfo)
+     const throw (LookupException) {
+     struct group *tmpgroup = ::getgrgid(ginfo.getGid());
+     if (tmpgroup == NULL) {
+-        throw LookupException(std::string("Could not lookup GID ") 
++        throw LookupException(std::string("Could not lookup GID ")
+                                + Util::intToStr(ginfo.getGid()),
+                               __FILE__, __LINE__);
+     }
+     return std::string(tmpgroup->gr_name);
+ }
+ 
++unsigned int suPHP::API_Linux::GroupInfo_getGroupMemberCount(const GroupInfo &ginfo)
++    const throw (LookupException) {
++    unsigned int count = 0;
++    struct group *tmpgroup = ::getgrgid(ginfo.getGid());
++    if (tmpgroup == NULL) {
++        throw LookupException(std::string("Could not lookup GID ")
++                               + Util::intToStr(ginfo.getGid()),
++                              __FILE__, __LINE__);
++    }
++    for( char **gr_mem = tmpgroup->gr_mem; gr_mem && *gr_mem; gr_mem++ )
++        count++;
++    return( count );
++}
++
+ bool suPHP::API_Linux::File_exists(const File& file) const {
+     struct stat dummy;
+     if (::lstat(file.getPath().c_str(), &dummy) == 0)
+diff --git a/src/API_Linux.hpp b/src/API_Linux.hpp
+index 74db0e4..82726db 100644
+--- a/src/API_Linux.hpp
++++ b/src/API_Linux.hpp
+@@ -145,6 +145,13 @@ namespace suPHP {
+          */
+         std::string GroupInfo_getGroupname(const GroupInfo& ginfo) const 
+             throw (LookupException);
++
++        /**
++         * Returns the number of supplementary group members.
++         *  NOTE: This doesn't include the primary group member.
++         */
++        unsigned int GroupInfo_getGroupMemberCount(const GroupInfo& ginfo) const
++            throw (LookupException);
+         
+         /**
+          * Checks whether file exists
+diff --git a/src/Application.cpp b/src/Application.cpp
+index edb3409..0f2343e 100644
+--- a/src/Application.cpp
++++ b/src/Application.cpp
+@@ -91,7 +91,6 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
+             return 1;
+         }
+ 
+-
+         // Do checks that do not need target user info
+         this->checkScriptFileStage1(scriptFilename, config, env);
+ 
+@@ -249,7 +248,7 @@ void suPHP::Application::checkScriptFileStage1(
+ 
+     }
+ 
+-    if (!config.getAllowFileGroupWriteable()
++    if (!config.getAllowFileGroupWriteable().compare("false")
+         && realScriptFile.hasGroupWriteBit()) {
+         std::string error = "File \"" + realScriptFile.getPath()
+             + "\" is writeable by group";
+@@ -324,6 +323,26 @@ void suPHP::Application::checkScriptFileStage2(
+     // Check directory ownership and permissions
+     checkParentDirectories(realScriptFile, targetUser, config);
+     checkParentDirectories(scriptFile, targetUser, config);
++
++    // If the user's primary group has no additional supplmental group
++    // members, go ahead and allow write bit to be set since only that user
++    // can see the contents of the script anyways.
++    //  NOTE 1: This doesn't use the targetGroup since the admin may arbitarily
++    //          choose a common group.
++    //  NOTE 2: This doesn't take into account multiple users sharing the
++    //          in the /etc/passwd file.
++    if (!config.getAllowFileGroupWriteable().compare("cpanel") &&
++        realScriptFile.hasGroupWriteBit() ) {
++        GroupInfo fileGroup = realScriptFile.getGroup();
++        GroupInfo userGroup = targetUser.getGroupInfo();
++
++        if( fileGroup != userGroup || fileGroup.getGroupMemberCount() > 0 ) {
++            std::string error = "File \"" + realScriptFile.getPath()
++                + "\" is writeable by a group with multiple members";
++            logger.logWarning(error);
++            throw SoftException(error, __FILE__, __LINE__);
++        }
++    }
+ }
+ 
+ void suPHP::Application::checkProcessPermissions(
+diff --git a/src/Configuration.cpp b/src/Configuration.cpp
+index 872010b..9f412d8 100644
+--- a/src/Configuration.cpp
++++ b/src/Configuration.cpp
+@@ -88,7 +88,7 @@ suPHP::Configuration::Configuration() {
+     this->webserver_user = "wwwrun";
+ #endif
+     this->docroots.push_back("/");
+-    this->allow_file_group_writeable = false;
++    this->allow_file_group_writeable = "cpanel";
+     this->allow_directory_group_writeable = false;
+     this->allow_file_others_writeable = false;
+     this->allow_directory_others_writeable = false;
+@@ -136,8 +136,13 @@ void suPHP::Configuration::readFromFile(File& file)
+                 this->webserver_user = value;
+             else if (key == "docroot") {
+                 this->docroots = sect.getValues(key);
+-            } else if (key == "allow_file_group_writeable")
+-                this->allow_file_group_writeable = this->strToBool(value);
++            } else if (key == "allow_file_group_writeable") {
++                if( value.compare("true") && value.compare("false") && value.compare("cpanel") )
++                    throw ParsingException("invalid value for \"" + key +
++                                           "\" in section [global].  must be true, false, or cpanel",
++                                           __FILE__, __LINE__);
++                this->allow_file_group_writeable = value;
++            }
+             else if (key == "allow_directory_group_writeable")
+                 this->allow_directory_group_writeable = this->strToBool(value);
+             else if (key == "allow_file_others_writeable")
+@@ -230,7 +235,7 @@ bool suPHP::Configuration::getUserdirOverridesUsergroup() const {
+     return this->userdir_overrides_usergroup;
+ }
+ 
+-bool suPHP::Configuration::getAllowFileGroupWriteable() const {
++std::string suPHP::Configuration::getAllowFileGroupWriteable() const {
+     return this->allow_file_group_writeable;
+ }
+ 
+diff --git a/src/Configuration.hpp b/src/Configuration.hpp
+index f8b8930..e64b9a5 100644
+--- a/src/Configuration.hpp
++++ b/src/Configuration.hpp
+@@ -45,7 +45,7 @@ namespace suPHP {
+         std::string logfile;
+         std::string webserver_user;
+         std::vector<std::string> docroots;
+-        bool allow_file_group_writeable;
++        std::string allow_file_group_writeable;
+         bool allow_directory_group_writeable;
+         bool allow_file_others_writeable;
+         bool allow_directory_others_writeable;
+@@ -122,7 +122,7 @@ namespace suPHP {
+          * Returns wheter suPHP should ignore the group write bit of
+          * the script file
+          */
+-        bool getAllowFileGroupWriteable() const;
++        std::string getAllowFileGroupWriteable() const;
+ 
+         /**
+          * Returns wheter suPHP should ignore the group write bit of
+diff --git a/src/GroupInfo.cpp b/src/GroupInfo.cpp
+index cb7a6f4..086d0db 100644
+--- a/src/GroupInfo.cpp
++++ b/src/GroupInfo.cpp
+@@ -44,6 +44,10 @@ std::string suPHP::GroupInfo::getGroupname() const
+     return api.GroupInfo_getGroupname(*this);
+ }
+ 
++unsigned int suPHP::GroupInfo::getGroupMemberCount() const throw (LookupException) {
++    API &api = API_Helper::getSystemAPI();
++    return api.GroupInfo_getGroupMemberCount(*this);
++}
+ 
+ int suPHP::GroupInfo::getGid() const {
+     return this->gid;
+diff --git a/src/GroupInfo.hpp b/src/GroupInfo.hpp
+index 0cc7df6..a0f538b 100644
+--- a/src/GroupInfo.hpp
++++ b/src/GroupInfo.hpp
+@@ -55,6 +55,12 @@ namespace suPHP {
+          * Returns groupname
+          */
+         std::string getGroupname() const throw (LookupException);
++
++        /**
++         * Returns the number of supplementary group members.
++         *  NOTE: This doesn't include the primary group member.
++         */
++        unsigned int getGroupMemberCount() const throw (LookupException);
+         
+         /**
+          * Returns GID
+-- 
+2.11.0
+
