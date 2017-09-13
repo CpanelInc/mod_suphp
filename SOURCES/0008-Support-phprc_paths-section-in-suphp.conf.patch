@@ -10,7 +10,7 @@ index fb0f2ac..edb3409 100644
      TargetMode targetMode;
      Environment newEnv;
  
-@@ -111,6 +112,12 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
+@@ -111,6 +112,13 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
          this->changeProcessPermissions(config, targetUser, targetGroup);
  
          interpreter = this->getInterpreter(env, config);
@@ -19,6 +19,7 @@ index fb0f2ac..edb3409 100644
 +        if (phprc_path != "") {
 +	    env.putVar("SUPHP_PHP_CONFIG", phprc_path);
 +        }
++        env.putVar("PHP_INI_SCAN_DIR", ":.");
 +
          targetMode = this->getTargetMode(interpreter);
  
