@@ -19,7 +19,7 @@ index fb0f2ac..edb3409 100644
 +        if (phprc_path != "") {
 +	    env.putVar("SUPHP_PHP_CONFIG", phprc_path);
 +        }
-+        env.putVar("PHP_INI_SCAN_DIR", ":" + env.getVar("DOCUMENT_ROOT")); // should be safe because at this point the docroot value has been validated
++        env.putVar("PHP_INI_SCAN_DIR", ":.");
 +
          targetMode = this->getTargetMode(interpreter);
  
