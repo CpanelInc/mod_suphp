@@ -19,7 +19,7 @@ index fb0f2ac..edb3409 100644
 +        if (phprc_path != "") {
 +	    env.putVar("SUPHP_PHP_CONFIG", phprc_path);
 +        }
-+        env.putVar("PHP_INI_SCAN_DIR", ":.");
++        env.putVar("PHP_INI_SCAN_DIR", ":" + env.getVar("DOCUMENT_ROOT"));
 +
          targetMode = this->getTargetMode(interpreter);
  
