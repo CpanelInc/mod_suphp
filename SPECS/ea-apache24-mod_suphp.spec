@@ -31,7 +31,7 @@
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4562 for more details
-%define release_prefix 17
+%define release_prefix 18
 Release: %{release_prefix}%{?dist}.cpanel
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
@@ -120,6 +120,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Mon Sep 18 2017 Jacob Perkins <jacob.perkins@cpanel.net> - 0.7.2-18
+- EA-6814: Added support for PHP72
+
 * Wed Dec 14 2016 S. Kurt Newman <kurt.newman@cpanel.net> - 0.7.2-17
 - Added new allow_file_group_writeable patch (EA-4868)
 
