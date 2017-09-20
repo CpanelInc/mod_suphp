@@ -31,7 +31,7 @@
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4562 for more details
-%define release_prefix 19
+%define release_prefix 20
 Release: %{release_prefix}%{?dist}.cpanel
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
@@ -120,6 +120,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Wed Sep 20 2017 Dan Muey <dan@cpanel.net> - 0.7.2-20
+- EA-6833: Add explicit etc/ and etc/php.d/ paths before CWD so we get ini merging behavior
+
 * Mon Sep 18 2017 Jacob Perkins <jacob.perkins@cpanel.net> - 0.7.2-19
 - EA-6814: Added support for PHP72
 
