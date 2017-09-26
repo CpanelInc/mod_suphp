@@ -1,5 +1,3 @@
-diff --git a/src/Application.cpp b/src/Application.cpp
-index fb0f2ac..edb3409 100644
 --- a/src/Application.cpp
 +++ b/src/Application.cpp
 @@ -57,6 +57,7 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
@@ -10,20 +8,26 @@ index fb0f2ac..edb3409 100644
      TargetMode targetMode;
      Environment newEnv;
  
-@@ -111,6 +112,12 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
+@@ -111,6 +112,18 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
          this->changeProcessPermissions(config, targetUser, targetGroup);
  
          interpreter = this->getInterpreter(env, config);
-+    
++
 +        phprc_path = this->getPHPRCPath(env, config);
 +        if (phprc_path != "") {
-+	    env.putVar("SUPHP_PHP_CONFIG", phprc_path);
++           env.putVar("SUPHP_PHP_CONFIG", phprc_path);
++        } else {
++            if (targetMode == TARGETMODE_PHP) {
++                std::string phpPath = interpreter.substr(4); // copy w/out the TARGETMODE_PHP indicating prefix php:
++                std::string phpPrefix = phpPath.substr(0, phpPath.find("/usr/bin/"));
++                env.putVar("PHP_INI_SCAN_DIR", phpPrefix + "/etc:" + phpPrefix + "/etc/php.d:.");
++            }
 +        }
 +
          targetMode = this->getTargetMode(interpreter);
  
          // Prepare environment for new process
-@@ -498,6 +505,18 @@ Environment suPHP::Application::prepareEnvironment(
+@@ -482,6 +495,18 @@ Environment suPHP::Application::prepareEnvironment(
  }
  
  
@@ -31,8 +35,8 @@ index fb0f2ac..edb3409 100644
 +    const Environment& env, const Configuration& config)
 +    throw (SecurityException) {
 +    if (!env.hasVar("SUPHP_HANDLER"))
-+	throw SecurityException("Environment variable SUPHP_HANDLER not set",
-+				__FILE__, __LINE__);
++       throw SecurityException("Environment variable SUPHP_HANDLER not set",
++                               __FILE__, __LINE__);
 +    std::string handler = env.getVar("SUPHP_HANDLER");
 +    
 +    std::string phprc_path = config.getPHPRCPath(handler);
