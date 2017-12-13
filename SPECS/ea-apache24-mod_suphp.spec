@@ -31,7 +31,7 @@
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4562 for more details
-%define release_prefix 22
+%define release_prefix 23
 Release: %{release_prefix}%{?dist}.cpanel
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
@@ -120,6 +120,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Wed Dec 13 2017 Dan Muey <dan@cpanel.net> - 0.7.2-23
+- ZC-3144: undo 0.7.2-22 change since it breaks expected inheritance (part of ZC-3130)
+
 * Thu Nov 02 2017 Brett Estrade <brett@cpanel.net> - 0.7.2-22
 - SWAT-730: remove phpPrefix/etc from INI scan path
 
