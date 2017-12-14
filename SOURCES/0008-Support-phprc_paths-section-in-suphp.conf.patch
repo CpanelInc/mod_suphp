@@ -20,7 +20,7 @@
 +            if (targetMode == TARGETMODE_PHP) {
 +                std::string phpPath = interpreter.substr(4); // copy w/out the TARGETMODE_PHP indicating prefix php:
 +                std::string phpPrefix = phpPath.substr(0, phpPath.find("/usr/bin/"));
-+                env.putVar("PHP_INI_SCAN_DIR", phpPrefix + "/etc/php.d:.");
++                env.putVar("PHP_INI_SCAN_DIR", phpPrefix + "/etc:" + phpPrefix + "/etc/php.d:.");
 +            }
 +        }
 +
