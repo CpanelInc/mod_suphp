@@ -31,7 +31,7 @@
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4562 for more details
-%define release_prefix 23
+%define release_prefix 24
 Release: %{release_prefix}%{?dist}.cpanel
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
@@ -103,7 +103,6 @@ make install DESTDIR=%{buildroot}
 install -D %{SOURCE4}             %{buildroot}%{_sysconfdir}/suphp.conf
 install -D %{SOURCE1}             %{buildroot}%{_httpd_confdir}/00-suphp.conf
 install -D %{SOURCE2}             %{buildroot}%{_httpd_modconfdir}/90-suphp.conf
-install -D /dev/null              %{buildroot}%{_localstatedir}/log/apache2/suphp_log
 
 %clean
 rm -rf %{buildroot}
@@ -115,11 +114,13 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/suphp.conf
 %config(noreplace) %{_httpd_confdir}/00-suphp.conf
 %config(noreplace) %{_httpd_modconfdir}/90-suphp.conf
-%ghost %{_localstatedir}/log/apache2/suphp_log
 %doc %attr(0644,root,root) AUTHORS  ChangeLog  COPYING  NEWS
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Fri Jul 06 2018 Tim Mullin <tim@cpanel.net> - 0.7.2-24
+- EA-7555: Don't remove suphp_log upon uninstall
+
 * Wed Dec 13 2017 Dan Muey <dan@cpanel.net> - 0.7.2-23
 - ZC-3144: undo 0.7.2-22 change since it breaks expected inheritance (part of ZC-3130)
 
