@@ -31,7 +31,7 @@
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4562 for more details
-%define release_prefix 24
+%define release_prefix 25
 Release: %{release_prefix}%{?dist}.cpanel
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
@@ -118,6 +118,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Tue Jul 31 2018 Tim Mullin <tim@cpanel.net> - 0.7.2-25
+- EA-7525: Fixed 0008-Support-phprc_paths-section-in-suphp.conf.patch, targetMode used before initialized
+
 * Fri Jul 06 2018 Tim Mullin <tim@cpanel.net> - 0.7.2-24
 - EA-7555: Don't remove suphp_log upon uninstall
 
