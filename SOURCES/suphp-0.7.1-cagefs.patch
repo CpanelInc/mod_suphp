@@ -23,7 +23,7 @@ index 0a810b6..cdf7ea4 100644
  
  AC_ARG_WITH([min-uid], 
 diff --git a/src/Application.cpp b/src/Application.cpp
-index 8b6c492..381ba6b 100644
+index edb3409..0d6e34a 100644
 --- a/src/Application.cpp
 +++ b/src/Application.cpp
 @@ -37,6 +37,11 @@
@@ -38,7 +38,7 @@ index 8b6c492..381ba6b 100644
  using namespace suPHP;
  
  
-@@ -447,6 +452,29 @@ void suPHP::Application::changeProcessPermissions(
+@@ -441,6 +446,29 @@ void suPHP::Application::changeProcessPermissions(
      throw (SystemException, SoftException, SecurityException) {
      API& api = API_Helper::getSystemAPI();
  
