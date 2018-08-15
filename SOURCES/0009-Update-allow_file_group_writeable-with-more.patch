@@ -126,10 +126,10 @@ index 74db0e4..82726db 100644
          /**
           * Checks whether file exists
 diff --git a/src/Application.cpp b/src/Application.cpp
-index 381ba6b..27ea6e4 100644
+index edb3409..0f2343e 100644
 --- a/src/Application.cpp
 +++ b/src/Application.cpp
-@@ -96,7 +96,6 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
+@@ -91,7 +91,6 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
              return 1;
          }
  
@@ -137,7 +137,7 @@ index 381ba6b..27ea6e4 100644
          // Do checks that do not need target user info
          this->checkScriptFileStage1(scriptFilename, config, env);
  
-@@ -260,7 +259,7 @@ void suPHP::Application::checkScriptFileStage1(
+@@ -249,7 +248,7 @@ void suPHP::Application::checkScriptFileStage1(
  
      }
  
@@ -146,7 +146,7 @@ index 381ba6b..27ea6e4 100644
          && realScriptFile.hasGroupWriteBit()) {
          std::string error = "File \"" + realScriptFile.getPath()
              + "\" is writeable by group";
-@@ -335,6 +334,26 @@ void suPHP::Application::checkScriptFileStage2(
+@@ -324,6 +323,26 @@ void suPHP::Application::checkScriptFileStage2(
      // Check directory ownership and permissions
      checkParentDirectories(realScriptFile, targetUser, config);
      checkParentDirectories(scriptFile, targetUser, config);
