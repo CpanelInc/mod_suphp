@@ -119,7 +119,7 @@ rm -rf %{buildroot}
 
 %changelog
 * Wed Aug 15 2018 Cory McIntire <cory@cpanel.net> - 0.7.2-26
-- EA-7770: Revert change from EA-7525 as it causes Cloud Linux ini not to load
+- EA-7779: Revert change from EA-7525 as it causes Cloud Linux ini not to load
 
 * Tue Jul 31 2018 Tim Mullin <tim@cpanel.net> - 0.7.2-25
 - EA-7525: Fixed 0008-Support-phprc_paths-section-in-suphp.conf.patch, targetMode used before initialized
