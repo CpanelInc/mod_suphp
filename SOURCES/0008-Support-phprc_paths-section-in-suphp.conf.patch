@@ -8,13 +8,11 @@
      TargetMode targetMode;
      Environment newEnv;
  
-@@ -111,8 +112,20 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
+@@ -111,6 +112,18 @@ int suPHP::Application::run(CommandLine& cmdline, Environment& env) {
          this->changeProcessPermissions(config, targetUser, targetGroup);
  
          interpreter = this->getInterpreter(env, config);
 +
-         targetMode = this->getTargetMode(interpreter);
- 
 +        phprc_path = this->getPHPRCPath(env, config);
 +        if (phprc_path != "") {
 +           env.putVar("SUPHP_PHP_CONFIG", phprc_path);
@@ -26,10 +24,10 @@
 +            }
 +        }
 +
-         // Prepare environment for new process
-         newEnv = this->prepareEnvironment(env, config, targetMode);
+         targetMode = this->getTargetMode(interpreter);
  
-@@ -498,6 +511,18 @@ Environment suPHP::Application::prepareEnvironment(
+         // Prepare environment for new process
+@@ -482,6 +495,18 @@ Environment suPHP::Application::prepareEnvironment(
  }
  
  
@@ -119,15 +117,15 @@ index 6f1aa12..f8b8930 100644
          LogLevel loglevel;
          int min_uid;
          int min_gid;
-@@ -169,6 +170,11 @@ namespace suPHP {
-          */
+@@ -170,6 +171,11 @@ namespace suPHP {
          std::string getEnvPath() const;
  
-+        /**
+         /**
 +	 * Returns phprc_path string for the specified handler
 +	 */
 +	std::string getPHPRCPath(std::string handler) const;
 +	
-         /**
++        /**
           * Returns interpreter string for specified handler
           */
+         std::string getInterpreter(std::string handler) const
