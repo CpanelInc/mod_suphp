@@ -20,7 +20,7 @@ cp etc/apache2/conf.d/00-suphp.conf debian/tmp/etc/apache2/conf.d/00-suphp.conf
 cp etc/apache2/conf.modules.d/90-suphp.conf debian/tmp/etc/apache2/conf.modules.d/90-suphp.conf
 cp opt/cpanel/root/etc/suphp.conf debian/tmp/etc/suphp.conf
 cp usr/lib64/apache2/modules/mod_suphp.so debian/tmp/usr/lib64/apache2/modules/mod_suphp.so
-cp usr/local/sbin/suphp debian/tmp/usr/sbin/suphp
+cp usr/sbin/suphp debian/tmp/usr/sbin/suphp
 cp AUTHORS debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2
 cp doc/CONFIG debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2
 cp COPYING debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2
