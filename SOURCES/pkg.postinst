@@ -4,15 +4,10 @@
 # no mechanism for that in SPEC yet, also looks in debian/ and not <macro>.debian/
 # we can not yet use them in the spec until ZC-8893 does ^^^
 
-FILE=/etc/os-release
-if test -f "$FILE"; then
-    NAME=`cat /etc/os-release | grep '^NAME=' | sed -r 's/NAME="(.*)"/\1/'`
-    if [ "$NAME" = "Ubuntu" ]
-    then
-        # Only do this on Ubuntu
-        chown root:nobody /usr/sbin/suphp
-        chmod 4750 /usr/sbin/suphp
-    fi
+if test -x "/usr/bin/apt"; then
+    # Only do this on Ubuntu
+    chown root:nobody /usr/sbin/suphp
+    chmod 4750 /usr/sbin/suphp
 fi
 
 
