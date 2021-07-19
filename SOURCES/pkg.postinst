@@ -5,7 +5,7 @@
 # we can not yet use them in the spec until ZC-8893 does ^^^
 
 if test -x "/usr/bin/apt"; then
-    # Only do this on Ubuntu
+    # we must manually set permissions on apt/deb based system because deb’s have no mechanism for permission.
     chown root:nobody /usr/sbin/suphp
     chmod 4750 /usr/sbin/suphp
 fi
