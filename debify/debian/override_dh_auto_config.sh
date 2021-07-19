@@ -20,6 +20,8 @@ mkdir -p m4
 autoreconf -fi
 
 ./configure \
+    --sbindir=/usr/sbin \
+    --sysconfdir=/etc \
     --with-apache-user=nobody \
     --with-setid-mode=paranoid \
     --with-apr=$ea_apr_dir \
