@@ -31,7 +31,7 @@
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4562 for more details
-%define release_prefix 27
+%define release_prefix 28
 Release: %{release_prefix}%{?dist}.cpanel
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
@@ -118,6 +118,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Wed Nov 10 2021 Julian Brown <julian.brown@cpanel.net> - 0.7.2-28
+- ZC-9491: Add ea-php81
+
 * Wed Oct 28 2020 Daniel Muey <dan@cpanel.net> - 0.7.2-27
 - ZC-7308: Updates for PHP 8 (fix for 7.3 and 7.4)
 
