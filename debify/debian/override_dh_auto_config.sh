@@ -16,6 +16,8 @@ cp /usr/share/pkgconfig/ea-apr16-util-1.pc config
 export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:`pwd`/config"
 touch configure
 
+export CXXFLAGS="$CXXFLAGS -std=c++14"
+
 mkdir -p m4
 autoreconf -fi
 
