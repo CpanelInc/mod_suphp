@@ -31,7 +31,7 @@
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4562 for more details
-%define release_prefix 29
+%define release_prefix 30
 Release: %{release_prefix}%{?dist}.cpanel
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
@@ -118,6 +118,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Wed Dec 29 2021 Dan Muey <dan@cpanel.net> - 0.7.2-30
+- ZC-9616: disable OBS debuginfo flag for C6 and C7
+
 * Thu Dec 16 2021 Julian Brown <julian.brown@cpanel.net> - 0.7.2-29
 - ZC-9596: Changes to build on Ubuntu 21
 
