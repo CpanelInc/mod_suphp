@@ -123,7 +123,7 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
-* Thu Sep 29 2022 Julian Brown <julian.brown@cpanel.net> - 0.7.2-30
+* Thu Sep 29 2022 Julian Brown <julian.brown@cpanel.net> - 0.7.2-31
 - ZC-10009: Add changes so that it builds on AlmaLinux 9
 
 * Wed Dec 29 2021 Dan Muey <dan@cpanel.net> - 0.7.2-30
