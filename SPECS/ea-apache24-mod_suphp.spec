@@ -31,7 +31,7 @@
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4562 for more details
-%define release_prefix 30
+%define release_prefix 31
 Release: %{release_prefix}%{?dist}.cpanel
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
@@ -83,9 +83,14 @@ the PHP interpreter.
 %patch9 -p1
 
 %build
+set -x
 
 mkdir -p m4
 autoreconf -fi
+
+%if 0%{?rhel} >= 9
+export CXXFLAGS="$CXXFLAGS -std=c++14 -fPIE"
+%endif
 
 %configure \
     --with-apache-user=nobody \
@@ -118,6 +123,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Thu Sep 29 2022 Julian Brown <julian.brown@cpanel.net> - 0.7.2-30
+- ZC-10009: Add changes so that it builds on AlmaLinux 9
+
 * Wed Dec 29 2021 Dan Muey <dan@cpanel.net> - 0.7.2-30
 - ZC-9616: disable OBS debuginfo flag for C6 and C7
 
