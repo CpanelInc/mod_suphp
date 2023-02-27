@@ -31,7 +31,7 @@
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4562 for more details
-%define release_prefix 32
+%define release_prefix 33
 Release: %{release_prefix}%{?dist}.cpanel
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
@@ -90,6 +90,11 @@ autoreconf -fi
 
 %if 0%{?rhel} >= 9
 export CXXFLAGS="$CXXFLAGS -std=c++14 -fPIE"
+
+# Broad in scope, could be isolated to a specific hardening element.
+# https://src.fedoraproject.org/rpms/redhat-rpm-config/blob/rawhide/f/buildflags.md#hardened-builds
+%undefine _hardened_build
+
 %endif
 
 %configure \
@@ -123,6 +128,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Wed Feb 22 2023 Dan Muey <dan@cpanel.net> - 0.7.2-33
+- ZC-10531: Restore “Scan this dir for additional .ini files” for A9
+
 * Mon Oct 17 2022 Brian Mendoza <brian.mendoza@cpanel.net> - 0.7.2-32
 - ZC-10381: Add ea-php82
 
