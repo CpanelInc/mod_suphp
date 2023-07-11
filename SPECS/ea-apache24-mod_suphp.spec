@@ -26,12 +26,10 @@
 %global ns_name ea-apache24
 %global upstream_name mod_suphp
 
-%define debug_package %{nil}
-
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4562 for more details
-%define release_prefix 33
+%define release_prefix 34
 Release: %{release_prefix}%{?dist}.cpanel
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
@@ -128,6 +126,9 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Wed May 17 2023 Dan Muey <dan@cpanel.net> - 0.7.2-34
+- ZC-10938: Remove DISABLE_DEBUGINFO (and i586 if any) from Makefile, deal w/ debug_package nil
+
 * Wed Feb 22 2023 Dan Muey <dan@cpanel.net> - 0.7.2-33
 - ZC-10531: Restore “Scan this dir for additional .ini files” for A9
 
