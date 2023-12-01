@@ -13,25 +13,25 @@ mkdir -p debian/tmp/etc/apache2/conf.d
 mkdir -p debian/tmp/etc/apache2/conf.modules.d
 mkdir -p debian/tmp/usr/lib64/apache2/modules
 mkdir -p debian/tmp/usr/sbin
-mkdir -p debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2
-mkdir -p debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2/apache
+mkdir -p debian/tmp/usr/share/doc/ea-apache24-mod_suphp
+mkdir -p debian/tmp/usr/share/doc/ea-apache24-mod_suphp/apache
 
 cp etc/apache2/conf.d/00-suphp.conf debian/tmp/etc/apache2/conf.d/00-suphp.conf
 cp etc/apache2/conf.modules.d/90-suphp.conf debian/tmp/etc/apache2/conf.modules.d/90-suphp.conf
 cp opt/cpanel/root/etc/suphp.conf debian/tmp/etc/suphp.conf
 cp usr/lib64/apache2/modules/mod_suphp.so debian/tmp/usr/lib64/apache2/modules/mod_suphp.so
 cp usr/sbin/suphp debian/tmp/usr/sbin/suphp
-cp AUTHORS debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2
-cp doc/CONFIG debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2
-cp COPYING debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2
-cp ChangeLog debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2
-cp INSTALL debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2
-cp doc/LICENSE debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2
-cp NEWS debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2
-cp README debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2
-cp doc/suphp.conf-example debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2
+cp AUTHORS debian/tmp/usr/share/doc/ea-apache24-mod_suphp
+cp doc/CONFIG debian/tmp/usr/share/doc/ea-apache24-mod_suphp
+cp COPYING debian/tmp/usr/share/doc/ea-apache24-mod_suphp
+cp ChangeLog debian/tmp/usr/share/doc/ea-apache24-mod_suphp
+cp INSTALL debian/tmp/usr/share/doc/ea-apache24-mod_suphp
+cp doc/LICENSE debian/tmp/usr/share/doc/ea-apache24-mod_suphp
+cp NEWS debian/tmp/usr/share/doc/ea-apache24-mod_suphp
+cp README debian/tmp/usr/share/doc/ea-apache24-mod_suphp
+cp doc/suphp.conf-example debian/tmp/usr/share/doc/ea-apache24-mod_suphp
 
-cp doc/apache/CONFIG debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2/apache
-cp doc/apache/INSTALL debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2/apache
-cp doc/apache/README debian/tmp/usr/share/doc/ea-apache24-mod_suphp-0.7.2/apache
+cp doc/apache/CONFIG debian/tmp/usr/share/doc/ea-apache24-mod_suphp/apache
+cp doc/apache/INSTALL debian/tmp/usr/share/doc/ea-apache24-mod_suphp/apache
+cp doc/apache/README debian/tmp/usr/share/doc/ea-apache24-mod_suphp/apache
 
