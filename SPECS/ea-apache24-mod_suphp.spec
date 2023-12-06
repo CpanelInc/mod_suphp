@@ -29,7 +29,7 @@
 Name:           %{ns_name}-%{upstream_name}
 Version:        0.7.2
 # Doing release_prefix this way for Release allows for OBS-proof versioning, See EA-4562 for more details
-%define release_prefix 34
+%define release_prefix 36
 Release: %{release_prefix}%{?dist}.cpanel
 License:        GPL-2.0
 Vendor:         cPanel, Inc.
@@ -126,6 +126,12 @@ rm -rf %{buildroot}
 %doc %attr(0644,root,root) doc/*
 
 %changelog
+* Fri Dec 01 2023 Julian Brown <julian.brown@cpanel.net> - 0.7.2-36
+- ZC-11434: Correct Ubuntu file problem
+
+* Mon Sep 18 2023 Julian Brown <julian.brown@cpanel.net> - 0.7.2-35
+- ZC-11188: Add PHP 8.3 to /etc/suphp.conf
+
 * Wed May 17 2023 Dan Muey <dan@cpanel.net> - 0.7.2-34
 - ZC-10938: Remove DISABLE_DEBUGINFO (and i586 if any) from Makefile, deal w/ debug_package nil
 
